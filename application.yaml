@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: go-app-argo-config
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Pratiyush05Pushkar/Hello-world.git
+    targetRevision: HEAD
+    path: yamls
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: true
