@@ -20,6 +20,6 @@ entries:
     - https://github.com/ugns/boundary-chart
     type: application
     urls:
-    - https://Pratiyush05Pushkar.github.io/helm-chart/boundary-0.1.0.tgz
+    - https://pratiyush05pushkar.github.io/helm-chart/boundary-0.1.0.tgz
     version: 0.1.0
 generated: "2023-09-14T13:23:57.547137+05:30"
