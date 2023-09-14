@@ -1,0 +1,433 @@
+---
+# Source: boundary/templates/worker-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boundary-release-worker-config
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-worker
+  annotations:
+data:
+  boundary-config.hcl: |
+    disable_mlock = true
+    log_format    = "standard"
+    
+    worker {
+      name        = "kubernetes-worker"
+      description = "Boundary kubernetes-worker"
+      controllers = ["boundary-release.default:9201"]
+      public_addr = "localhost:9202"
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "proxy"
+      tls_disable = true
+    }
+    
+    kms "aead" {
+        purpose   = "worker-auth"
+        key_id    = "worker-auth_key"
+        aead_type = "aes-gcm"
+        key       = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }
+---
+# Source: boundary/templates/controller-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: boundary-release
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-controller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      targetPort: api
+      protocol: TCP
+      name: api
+    - port: 9201
+      targetPort: cluster
+      protocol: TCP
+      name: cluster
+  selector:
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/component: boundary-controller
+---
+# Source: boundary/templates/worker-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: boundary-release-worker
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-worker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9202
+      targetPort: proxy
+      protocol: TCP
+      name: proxy
+  selector:
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/component: boundary-worker
+---
+# Source: boundary/templates/controller-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boundary-release-controller
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-controller
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: boundary
+      app.kubernetes.io/instance: boundary-release
+      app.kubernetes.io/component: boundary-controller
+  template:
+    metadata:
+      annotations:
+      labels:
+        app.kubernetes.io/name: boundary
+        app.kubernetes.io/instance: boundary-release
+        app.kubernetes.io/component: boundary-controller
+    spec:
+      serviceAccountName: boundary-release
+      securityContext:
+        {}
+      terminationGracePeriodSeconds: 10
+      initContainers:
+        - name: boundary-init
+          image: "groundnuty/k8s-wait-for:v1.6"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "job"
+            - "boundary-release-init"
+      containers:
+        - name: boundary-controller
+          securityContext:
+            {}
+          image: "hashicorp/boundary:0.10.5"
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/boundary", "server"]
+          args:
+            - "-config"
+            - "/boundary/boundary-config.hcl"
+          env:
+            - name: HOSTNAME
+              value: boundary
+          volumeMounts:
+            - name: boundary-config
+              mountPath: /boundary
+              readOnly: true
+          ports:
+            - name: api
+              containerPort: 9200
+              protocol: TCP
+            - name: cluster
+              containerPort: 9201
+              protocol: TCP
+            - name: ops
+              containerPort: 9203
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: ops
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: ops
+          resources:
+            {}
+      volumes:
+        - name: boundary-config
+          configMap:
+            name: boundary-release-controller-config
+---
+# Source: boundary/templates/worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boundary-release-worker
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: boundary
+      app.kubernetes.io/instance: boundary-release
+      app.kubernetes.io/component: boundary-worker
+  template:
+    metadata:
+      annotations:
+      labels:
+        app.kubernetes.io/name: boundary
+        app.kubernetes.io/instance: boundary-release
+        app.kubernetes.io/component: boundary-worker
+    spec:
+      serviceAccountName: boundary-release
+      securityContext:
+        {}
+      containers:
+        - name: boundary-worker
+          securityContext:
+            {}
+          image: "hashicorp/boundary:0.10.5"
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/boundary", "server"]
+          args:
+            - "-config"
+            - "/boundary/boundary-config.hcl"
+          env:
+            - name: HOSTNAME
+              value: boundary
+          volumeMounts:
+            - name: boundary-config
+              mountPath: /boundary
+              readOnly: true
+          ports:
+            - name: proxy
+              containerPort: 9202
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: proxy
+          readinessProbe:
+            tcpSocket:
+              port: proxy
+          resources:
+            {}
+      volumes:
+        - name: boundary-config
+          configMap:
+            name: boundary-release-worker-config
+---
+# Source: boundary/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: boundary-release
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: "-10"
+---
+# Source: boundary/templates/controller-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boundary-release-controller-config
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-controller
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade,pre-rollback
+data:
+  boundary-config.hcl: |
+    disable_mlock = true
+    log_format    = "standard"
+
+    controller {
+      name        = "kubernetes-controller"
+      description = "Boundary kubernetes-controller"
+      database {
+        url = "postgresql://postgres:ZfW8PZWY3s@postgresql-release.default.svc.cluster.local:5432/boundary?sslmode=disable"
+      }
+      public_cluster_addr = "boundary-release.default:9201"
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "api"
+      tls_disable = true
+    }
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "cluster"
+    }
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "ops"
+      tls_disable = true
+    }
+    
+    kms "aead" {
+        purpose   = "root"
+        key_id    = "root_key"
+        aead_type = "aes-gcm"
+        key       = "D0vmvzf8l+C709nVfEH3hgBCj6IF/1eb9kCTYTtnDVc="
+    }
+    kms "aead" {
+        purpose   = "recovery"
+        key_id    = "recovery_key"
+        aead_type = "aes-gcm"
+        key       = "Ivj8Si8UQBp+Zm2lLbUDTxOGikE8rSo6QihCjWSTXqY="
+    }
+    kms "aead" {
+        purpose   = "worker-auth"
+        key_id    = "worker-auth_key"
+        aead_type = "aes-gcm"
+        key       = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }
+---
+# Source: boundary/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade,pre-rollback
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: "-5"
+  name: boundary-release
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: ["batch","apps"]
+  resources: ["jobs","deployments"]
+  verbs: ["list", "get"]
+- apiGroups: ["apps"]
+  resources: ["deployments/scale"]
+  verbs: ["patch"]
+---
+# Source: boundary/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade,pre-rollback
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: "-5"
+  name: boundary-release
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boundary-release
+subjects:
+- kind: ServiceAccount
+  name: boundary-release
+  namespace: default
+---
+# Source: boundary/templates/database-init-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: boundary-release-init
+  namespace: default
+  labels:
+    helm.sh/chart: boundary-0.1.0
+    app.kubernetes.io/name: boundary
+    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: boundary-init
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade,pre-rollback
+    helm.sh/hook-weight: "0"
+spec:
+  template:
+    metadata:
+      annotations:
+      labels:
+        app.kubernetes.io/name: boundary
+        app.kubernetes.io/instance: boundary-release
+        app.kubernetes.io/component: boundary-init
+    spec:
+      serviceAccountName: boundary-release
+      securityContext:
+        {}
+      restartPolicy: OnFailure
+      initContainers:
+        - name: boundary-add-kubectl-tool
+          image: bitnami/kubectl:1.24
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Copying tools:"
+              /bin/cp -pv /opt/bitnami/kubectl/bin/kubectl /tools/
+          volumeMounts:
+            - mountPath: /tools
+              name: tools
+      containers:
+        - name: boundary-init
+          securityContext:
+            {}
+          image: "hashicorp/boundary:0.10.5"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              /tools/kubectl scale --replicas=0 deployment/boundary-release-controller || true
+              echo "Waiting for pods of 'boundary-release-controller' deployment to stopped"
+              /tools/kubectl wait --for=delete pod -l app.kubernetes.io/component=boundary-release-controller --timeout=300s || true
+              echo "Migrating database..."
+              boundary database migrate -config /boundary/boundary-config.hcl || boundary database init  -config /boundary/boundary-config.hcl || sleep infinity
+              /tools/kubectl scale --replicas=1 deployment/boundary-release-controller || true
+          env:
+            - name: HOSTNAME
+              value: boundary
+          volumeMounts:
+            - name: boundary-config
+              mountPath: /boundary
+              readOnly: true
+            - mountPath: /tools
+              name: tools
+      volumes:
+        - name: boundary-config
+          configMap:
+            name: boundary-release-controller-config
+        - name: tools
+          emptyDir: {}
