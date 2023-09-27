@@ -4,7 +4,7 @@ metadata:
   name: boundary-app
   namespace: argocd
 spec:
-  project: Boundary Application
+  project: default
   source:
     repoURL: https://github.com/Pratiyush05Pushkar/Hello-world.git
     targetRevision: HEAD
