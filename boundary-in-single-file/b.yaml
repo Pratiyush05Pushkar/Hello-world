@@ -3,13 +3,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: boundary-release-worker-config
+  name: release-name-boundary-worker-config
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-worker
   annotations:
@@ -21,7 +21,7 @@ data:
     worker {
       name        = "kubernetes-worker"
       description = "Boundary kubernetes-worker"
-      controllers = ["boundary-release.default:9201"]
+      controllers = ["release-name-boundary.default:9201"]
       public_addr = "localhost:9202"
     }
 
@@ -42,13 +42,13 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: boundary-release
+  name: release-name-boundary
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-controller
 spec:
@@ -64,20 +64,20 @@ spec:
       name: cluster
   selector:
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/instance: release-name
     app.kubernetes.io/component: boundary-controller
 ---
 # Source: boundary/templates/worker-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: boundary-release-worker
+  name: release-name-boundary-worker
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-worker
 spec:
@@ -89,20 +89,20 @@ spec:
       name: proxy
   selector:
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
+    app.kubernetes.io/instance: release-name
     app.kubernetes.io/component: boundary-worker
 ---
 # Source: boundary/templates/controller-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: boundary-release-controller
+  name: release-name-boundary-controller
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-controller
 spec:
@@ -112,17 +112,17 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: boundary
-      app.kubernetes.io/instance: boundary-release
+      app.kubernetes.io/instance: release-name
       app.kubernetes.io/component: boundary-controller
   template:
     metadata:
       annotations:
       labels:
         app.kubernetes.io/name: boundary
-        app.kubernetes.io/instance: boundary-release
+        app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: boundary-controller
     spec:
-      serviceAccountName: boundary-release
+      serviceAccountName: release-name-boundary
       securityContext:
         {}
       terminationGracePeriodSeconds: 10
@@ -132,12 +132,12 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - "job"
-            - "boundary-release-init"
+            - "release-name-boundary-init"
       containers:
         - name: boundary-controller
           securityContext:
             {}
-          image: "hashicorp/boundary:0.10.5"
+          image: "hashicorp/boundary:0.14.1"
           imagePullPolicy: IfNotPresent
           command: ["/bin/boundary", "server"]
           args:
@@ -172,19 +172,19 @@ spec:
       volumes:
         - name: boundary-config
           configMap:
-            name: boundary-release-controller-config
+            name: release-name-boundary-controller-config
 ---
 # Source: boundary/templates/worker-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: boundary-release-worker
+  name: release-name-boundary-worker
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-worker
 spec:
@@ -192,24 +192,24 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: boundary
-      app.kubernetes.io/instance: boundary-release
+      app.kubernetes.io/instance: release-name
       app.kubernetes.io/component: boundary-worker
   template:
     metadata:
       annotations:
       labels:
         app.kubernetes.io/name: boundary
-        app.kubernetes.io/instance: boundary-release
+        app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: boundary-worker
     spec:
-      serviceAccountName: boundary-release
+      serviceAccountName: release-name-boundary
       securityContext:
         {}
       containers:
         - name: boundary-worker
           securityContext:
             {}
-          image: "hashicorp/boundary:0.10.5"
+          image: "hashicorp/boundary:0.14.1"
           imagePullPolicy: IfNotPresent
           command: ["/bin/boundary", "server"]
           args:
@@ -237,19 +237,19 @@ spec:
       volumes:
         - name: boundary-config
           configMap:
-            name: boundary-release-worker-config
+            name: release-name-boundary-worker-config
 ---
 # Source: boundary/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: boundary-release
+  name: release-name-boundary
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
@@ -260,13 +260,13 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: boundary-release-controller-config
+  name: release-name-boundary-controller-config
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-controller
   annotations:
@@ -282,7 +282,7 @@ data:
       database {
         url = "postgresql://postgres:ZfW8PZWY3s@postgresql-release.default.svc.cluster.local:5432/boundary?sslmode=disable"
       }
-      public_cluster_addr = "boundary-release.default:9201"
+      public_cluster_addr = "release-name-boundary.default:9201"
     }
 
     listener "tcp" {
@@ -327,7 +327,7 @@ metadata:
     helm.sh/hook: pre-install,pre-upgrade,pre-rollback
     helm.sh/hook-delete-policy: before-hook-creation
     helm.sh/hook-weight: "-5"
-  name: boundary-release
+  name: release-name-boundary
   namespace: default
 rules:
 - apiGroups: [""]
@@ -348,27 +348,27 @@ metadata:
     helm.sh/hook: pre-install,pre-upgrade,pre-rollback
     helm.sh/hook-delete-policy: before-hook-creation
     helm.sh/hook-weight: "-5"
-  name: boundary-release
+  name: release-name-boundary
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: boundary-release
+  name: release-name-boundary
 subjects:
 - kind: ServiceAccount
-  name: boundary-release
+  name: release-name-boundary
   namespace: default
 ---
 # Source: boundary/templates/database-init-job.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: boundary-release-init
+  name: release-name-boundary-init
   namespace: default
   labels:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
-    app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-init
   annotations:
@@ -380,10 +380,10 @@ spec:
       annotations:
       labels:
         app.kubernetes.io/name: boundary
-        app.kubernetes.io/instance: boundary-release
+        app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: boundary-init
     spec:
-      serviceAccountName: boundary-release
+      serviceAccountName: release-name-boundary
       securityContext:
         {}
       restartPolicy: OnFailure
@@ -404,18 +404,18 @@ spec:
         - name: boundary-init
           securityContext:
             {}
-          image: "hashicorp/boundary:0.10.5"
+          image: "hashicorp/boundary:0.14.1"
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
             - -c
             - |
-              /tools/kubectl scale --replicas=0 deployment/boundary-release-controller || true
-              echo "Waiting for pods of 'boundary-release-controller' deployment to stopped"
-              /tools/kubectl wait --for=delete pod -l app.kubernetes.io/component=boundary-release-controller --timeout=300s || true
+              /tools/kubectl scale --replicas=0 deployment/release-name-boundary-controller || true
+              echo "Waiting for pods of 'release-name-boundary-controller' deployment to stopped"
+              /tools/kubectl wait --for=delete pod -l app.kubernetes.io/component=release-name-boundary-controller --timeout=300s || true
               echo "Migrating database..."
               boundary database migrate -config /boundary/boundary-config.hcl || boundary database init  -config /boundary/boundary-config.hcl || sleep infinity
-              /tools/kubectl scale --replicas=1 deployment/boundary-release-controller || true
+              /tools/kubectl scale --replicas=1 deployment/release-name-boundary-controller || true
           env:
             - name: HOSTNAME
               value: boundary
@@ -428,6 +428,6 @@ spec:
       volumes:
         - name: boundary-config
           configMap:
-            name: boundary-release-controller-config
+            name: release-name-boundary-controller-config
         - name: tools
           emptyDir: {}
