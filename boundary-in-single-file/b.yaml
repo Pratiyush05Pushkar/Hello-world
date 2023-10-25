@@ -9,7 +9,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-worker
   annotations:
@@ -48,7 +48,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-controller
 spec:
@@ -77,7 +77,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-worker
 spec:
@@ -102,7 +102,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-controller
 spec:
@@ -137,7 +137,7 @@ spec:
         - name: boundary-controller
           securityContext:
             {}
-          image: "hashicorp/boundary:0.10.5"
+          image: "hashicorp/boundary:0.14.1"
           imagePullPolicy: IfNotPresent
           command: ["/bin/boundary", "server"]
           args:
@@ -184,7 +184,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-worker
 spec:
@@ -209,7 +209,7 @@ spec:
         - name: boundary-worker
           securityContext:
             {}
-          image: "hashicorp/boundary:0.10.5"
+          image: "hashicorp/boundary:0.14.1"
           imagePullPolicy: IfNotPresent
           command: ["/bin/boundary", "server"]
           args:
@@ -249,7 +249,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
@@ -266,7 +266,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-controller
   annotations:
@@ -368,7 +368,7 @@ metadata:
     helm.sh/chart: boundary-0.1.0
     app.kubernetes.io/name: boundary
     app.kubernetes.io/instance: boundary-release
-    app.kubernetes.io/version: "0.10.5"
+    app.kubernetes.io/version: "0.14.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: boundary-init
   annotations:
@@ -404,7 +404,7 @@ spec:
         - name: boundary-init
           securityContext:
             {}
-          image: "hashicorp/boundary:0.10.5"
+          image: "hashicorp/boundary:0.14.1"
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
