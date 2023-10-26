@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: go-app-argo-config
+  name: go-test-app
   namespace: argocd
   annotations:
     notifications.argoproj.io/subscribe.on-deployed.devlake: ""
