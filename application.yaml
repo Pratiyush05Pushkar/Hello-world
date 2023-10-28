@@ -1,10 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: go-testing-app
+  name: go-git-link
   namespace: argocd
   annotations:
     notifications.argoproj.io/subscribe.on-deployed.devlake: ""
+    notifications.argoproj.io/subscribe.on-app-status-progressing.devlake: ""
+    notifications.argoproj.io/subscribe.on-app-status-healthy.devlake: ""
 spec:
   project: default
   source:
