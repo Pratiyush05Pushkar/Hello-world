@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: go-git-deployment_2
+  name: go-git-deployment-2
   namespace: argocd
   annotations:
     notifications.argoproj.io/subscribe.on-deployed.devlake: ""
