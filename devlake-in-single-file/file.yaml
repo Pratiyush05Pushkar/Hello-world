@@ -41,6 +41,7 @@ stringData:
   MYSQL_DATABASE: "lake"
   MYSQL_ROOT_PASSWORD: "admin"
   DB_URL: "mysql://merico:merico@devlake-mysql:3306/lake?charset=utf8mb4&parseTime=True&loc=UTC"
+  #DB_URL: "mysql://merico:merico@devlake-mysql:3306/lake?charset=utf8mb4&parseTime=True&loc=UTC"
   MYSQL_URL: "devlake-mysql:3306"
 #
 ---
