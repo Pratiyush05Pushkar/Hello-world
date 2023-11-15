@@ -4,9 +4,7 @@ metadata:
   name: go-git-link
   namespace: argocd
   annotations:
-    notifications.argoproj.io/subscribe.on-deployed.devlake: ""
-    notifications.argoproj.io/subscribe.on-app-status-progressing.devlake: ""
-    notifications.argoproj.io/subscribe.on-app-status-healthy.devlake: ""
+    notifications.argoproj.io/subscribe.golang-1-on-deployed.devlake: ""
 spec:
   project: default
   source:
